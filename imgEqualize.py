@@ -1,8 +1,11 @@
+#!/usr/bin/env python
+
 import numpy as np
 import cv2
 import glob     
 import string 
 import os
+import pyexiv2
 
 def main():
     img_dir = 'images/'
@@ -32,7 +35,21 @@ def main():
         img_processed = cv2.merge((b_processed,g_processed,r_processed))
         save_path = img_dir+'processed/p_'+img_path_split[1]
         cv2.imwrite(save_path,img_processed)
-        
+
+        # copy exif data over
+        oldmeta = pyexiv2.ImageMetadata(img_path)
+        oldmeta.read()
+        # read metadata of the original file
+        newmeta = pyexiv2.ImageMetadata(save_path)
+        newmeta.read()
+        # read metadata of the new file
+        # yes, there aren't any, but this is crucial!
+        # you need this class as the target for copying!
+        oldmeta.copy(newmeta)
+        newmeta.write()
+
+
+
         if (percent/float(100)) < (current_img_count/float(num_images)):
             print'%d' % (percent) + "%"+' processed'
             percent = percent+10
